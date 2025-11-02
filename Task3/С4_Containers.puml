@@ -1,0 +1,41 @@
+@startuml C4_Containers_Deposits
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+
+Person(Client, "Клиент", "Потенциальный/действующий клиент")
+
+
+System_Boundary(MarketingWebsiteSystem, "Сайт") {
+    Container(CatalogUI, "Catalog UI", "Каталог ставок и предложений банка", "Web/JS")
+    Container(DepositApplicationsUI, "Deposit Applications UI", "Обработка заявок", "Web/JS")
+}
+
+System_Boundary(CatalogSystem, "Каталог") {
+    Container(Catalog, "Catalog Service", "Python", "Бэкенд системы каталога")
+    ContainerDb(CatalogDB, "Catalog Database", "MongoDB", "Централизованное хранилище ставок")
+}
+
+System_Boundary(OnlineBankingSystem, "Интернет-банк") {
+    Container(OnlineBankingUI, "Online Banking UI", "ASP.NET MVC 4.5", "Веб-интерфейс интернет-банка")
+    Container(MonolithOnlineBanking, "Online Banking Monolith", "ASP.NET MVC 4.5", "Legacy: Монолитное ядро интернет-банка")
+    Container(OnlineBankingReverseProxy, "Online Banking Reverse Proxy", "ASP.NET MVC 4.5", "Обратный прокси для взаимодействия с монолитом интернет-банка")
+    Container(OnlineBankingService, "Online Banking Service", "ASP.NET MVC 4.5", "Сервис интернет-банка")
+
+    ContainerDb(MonolithOnlineBankingDB, "Online Banking Monolith Database", "MS SQL", "База данных ядра монолитного онлайн-банка")
+    ContainerDb(OnlineBankingDB, "Online Banking Service Database", "MS SQL", "База данных онлайн-банка")
+}
+
+
+
+Rel(Client, CatalogUI, "Использует", "REST/JSON")
+Rel(Client, DepositApplicationsUI, "Использует", "REST/JSON")
+Rel(Client, OnlineBankingUI, "Использует")
+
+Rel(CatalogUI, Catalog, "Получает каталог")
+Rel(Catalog, CatalogDB, "Операции на чтение/запись")
+
+Rel(OnlineBankingUI, OnlineBankingReverseProxy, "Операции на чтение/запись")
+
+
+SHOW_LEGEND()
+@enduml
