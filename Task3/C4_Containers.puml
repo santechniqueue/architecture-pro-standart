@@ -35,7 +35,7 @@ System_Boundary(OnlineBankingSystem, "Интернет-банк") {
 System_Boundary(DepositsSystem, "Депозиты") {
     Container(DepositsService, "Deposits Service", "ASP.NET Core 8", "Сервис депозитов")
 
-    ContainerDb(DepositsDB, "Depostis Database", "PostgreSQL + Patroni + HA", "База данных депозитов")
+    ContainerDb(DepositsDB, "Deposits Database", "PostgreSQL + Patroni + HA", "База данных депозитов")
 }
 
 System_Boundary(IntegrationSystem, "Шлюз интеграций") {
