@@ -24,7 +24,7 @@ Rel(ExternalOperator, ExternalCallCentre, "Получает актуальные
 
 'Systems rel
 Rel_L(Catalog, CallCentre, "Отправка актуальных ставок")
-Rel(Catalog, ExternalSFTP, "Отправка актуальных ставок")
+Rel(Catalog, ExternalSFTP, "Отправка актуальных ставок файлом")
 Rel(ExternalSFTP, ExternalCallCentre, "Отправка актуальных ставок")
 
 SHOW_LEGEND()

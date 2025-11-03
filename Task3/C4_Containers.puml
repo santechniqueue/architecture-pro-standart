@@ -65,7 +65,7 @@ Container_Ext(SMSTelecom, "SMS Telecom-operator", "", "Доставка сооб
 
 
 
-' Client relations
+' Actors relations
 Rel(Client, CatalogUI, "Использует", "REST, JSON")
 Rel(Client, DepositApplicationsUI, "Использует", "REST, JSON")
 Rel(Client, OnlineBankingUI, "Использует", "REST, JSON")
