@@ -2,9 +2,9 @@
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
 Person(Client, "Клиент", "Потенциальный/действующий клиент")
-Person(Operator, "Оператор кол-центра", "Обрабатывает звонки")
-Person(ExternalOperator, "Оператор партнёрского кол-центра", "Обрабатывает звонки")
+Person(CallCentreEmployee, "Оператор кол-центра", "Обрабатывает звонки")
 Person(CreditOfficeEmployee, "Сотрудник отдела кредитования", "Работает со ставками")
+Person_Ext(ExternalOperator, "Оператор партнёрского кол-центра", "Обрабатывает звонки")
 
 System_Boundary(BankSystem, "Системы банка") {
     System(CallCentre, "Платформа кол‑центра", "CRM-система для обработки клиентских обращений")
@@ -16,10 +16,10 @@ System_Ext(ExternalCallCentre, "Платформа партнёрского ко
 
 
 'Actors rel
-Rel(Client, Operator, "Совершает звонок")
+Rel(Client, CallCentreEmployee, "Совершает звонок")
 Rel(Client, ExternalOperator, "Совершает звонок")
 Rel(CreditOfficeEmployee, Catalog, "Обновляет ставки")
-Rel(Operator, CallCentre, "Получает актуальные ставки")
+Rel(CallCentreEmployee, CallCentre, "Получает актуальные ставки")
 Rel(ExternalOperator, ExternalCallCentre, "Получает актуальные ставки")
 
 'Systems rel
