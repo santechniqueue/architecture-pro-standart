@@ -58,3 +58,19 @@
 1. Зависимость от SFTP партнёра:<br>
 Риск: недоступность и узкие окна > задержка доставки файлов.
 Исправление: ретраи с backoff, очереди задач, мониторинг доступности, альтернативный канал (email).
+
+### Крупные задачи
+T1: [ASP.NET] Online banking MVP back-end - разработка back-end MVP интернет-банка
+T2: [Python] Catalog back-end - разработка back-end сервиса каталога
+T3: [DevOps] Kafka - развёртывание Kafka для интеграций
+T4: [Java] Message Bus - сообщений и синхронизация заявок в платформу кол-центра
+T5: [React] Marketing website catalog UI - разработка front-end сайта, каталог
+T6: [Python] Applications exchange - разработка публикации сообщений о заявках
+T7: [ASP.NET] ABS Adapter - разработка адаптера для взаимодействия с ABS
+T8: [DevOps] Integrations reverse proxy - развёртывание обратного прокси для интеграций
+T9: [React] Marketing website deposits UI - разработка front-end для списка депозитов на сайте
+T10: [Python] Rates calculations - разработка сервиса расчета ставок
+T11: [DevOps] Online banking reverse proxy - развёртывание обратного прокси для интернет-банка
+T12: [ASP.NET] Deposits MVP back-end - MVP сервиса депозитов
+T13: [React] Online banking front-end - разработка front-end интернет-банка
+T14: [Python] Rates export - разработка экспорта файлов партнёрскому кол-центру
