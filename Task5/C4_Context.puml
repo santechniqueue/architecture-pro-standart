@@ -1,0 +1,41 @@
+@startuml C4_Context_Deposits
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(Client, "Клиент", "Потенциальный/действующий клиент")
+Person(Operator, "Оператор кол-центра", "Обработка клиентских заявок")
+Person(BackOffice, "Сотрудник бэк-офиса", "Открытие кредита, документооборот")
+Person(FrontOffice, "Сотрудник в отделении банка", "Открытие кредита, документооборот")
+
+System_Boundary(BankSystem, "Системы банка") {
+    System(MarketingWebsite, "Сайт", "Публичный веб-сайт с кредитными предложениями и возможностью оставить заявку")
+    System(OnlineBanking, "Интернет-банк", "Каталог кредитных предложений, предодобренные кредиты и подача заявки")
+    System(CreditScoring, "Кредитный скоринг", "Оценка рейтинга клиента")
+    System(CreditConveyor, "Кредитный конвейер", "Система для хранения и обработки заявок на кредит")
+    System(ABS, "АБС", "Кредиты, счета, договоры, интеграционные сервисы")
+    System(SMSGateway, "СМС-шлюз телеком-оператора", "Шлюз для отправки СМС-уведомлений клиенту")
+    System(CallCentre, "Платформа кол‑центра", "CRM-система управления для работы с клиентами")
+}
+System_Ext(SMSProvider, "Телеком-оператор СМС", "Внешний оператор по отправке СМС, доставляющий СМС-сообщений клиенту")
+System_Ext(CreditBureau, "БКИ", "Хранение информации о кредитных обязательствах клиента")
+
+'Actors rel
+Rel(Client, MarketingWebsite, "Просмотр кредитов, отправка заявки")
+Rel(Client, OnlineBanking, "Просмотр кредитов, отправка заявки")
+Rel_L(FrontOffice, ABS, "Работа с заявками клиента, обработка клиентских запросов")
+Rel_L(BackOffice, CreditConveyor, "Работа с заявкой, работа с документами, открытие кредита")
+Rel(Operator, CallCentre, "Работа с заявками клиента, обработка клиентских звонков")
+
+'Systems rel
+Rel(MarketingWebsite, CallCentre, "Создание заявки")
+Rel(OnlineBanking, ABS, "Создание заявок, работа со счетами и депозитами")
+Rel(CreditConveyor, CreditScoring, "Получение кредитного рейтинга клиента")
+Rel(CreditScoring, CreditBureau, "Получение кредитных обязательств клиента")
+Rel(CreditScoring, OnlineBanking, "Передача кредитного рейтинга клиента")
+Rel(CallCentre, ABS, "Передача актуальных данных по заявке")
+Rel(ABS, SMSGateway, "Запрос на отправку СМС")
+Rel(ABS, CreditConveyor, "Передача заявки на кредит")
+Rel(SMSGateway, SMSProvider, "Отправка СМС")
+Rel(SMSProvider, Client, "Доставка СМС")
+
+SHOW_LEGEND()
+@enduml
