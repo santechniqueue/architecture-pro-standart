@@ -1,0 +1,34 @@
+@startuml C4_Context_Deposits
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(Client, "Клиент", "Потенциальный/действующий клиент")
+Person(Operator, "Оператор кол-центра", "Обработка клиентских заявок")
+Person(BackOffice, "Сотрудник бэк-офиса", "Открытие депозита, документооборот")
+Person(FrontOffice, "Сотрудник в отделении банка", "Открытие депозита, документооборот")
+
+System_Boundary(BankSystem, "Системы банка") {
+    System(MarketingWebsite, "Сайт", "Публичный веб-сайт со ставками и возможностью оставить заявку")
+    System(OnlineBanking, "Интернет-банк", "Каталог вкладов и подача заявки")
+    System(ABS, "АБС", "Депозиты, счета, договоры, интеграционные сервисы")
+    System(SMSGateway, "СМС-шлюз телеком-оператора", "Шлюз для отправки СМС-уведомлений клиенту")
+    System(CallCentre, "Платформа кол‑центра", "CRM-система управления для работы с клиентами")
+}
+System_Ext(SMSProvider, "Телеком-оператор СМС", "Внешний оператор по отправке СМС, доставляющий СМС-сообщений клиенту")
+
+'Actors rel
+Rel(Client, MarketingWebsite, "Просмотр ставок, отправка заявки")
+Rel(Client, OnlineBanking, "Просмотр каталога и счетов, отправка заявки")
+Rel_L(FrontOffice, ABS, "Работа с заявками клиента, обработка клиентских запросов")
+Rel_U(BackOffice, ABS, "Работа с заявкой, работа с документами, открытие депозита")
+Rel_L(Operator, CallCentre, "Работа с заявками клиента, обработка клиентских звонков")
+
+'Systems rel
+Rel(MarketingWebsite, CallCentre, "Создание заявки")
+Rel(OnlineBanking, ABS, "Создание заявок, работа со счетами и депозитами")
+Rel(CallCentre, ABS, "Передача актуальных данных по заявке")
+Rel_L(ABS, SMSGateway, "Запрос на отправку СМС")
+Rel_L(SMSGateway, SMSProvider, "Отправка СМС")
+Rel(SMSProvider, Client, "Доставка СМС")
+
+SHOW_LEGEND()
+@enduml

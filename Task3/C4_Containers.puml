@@ -1,0 +1,118 @@
+@startuml C4_Containers_Deposits
+title Схема MVP реализации депозитов банка "Стандарт"
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+
+Person(Client, "Client", "Потенциальный/действующий клиент")
+Person(BackOfficeEmployee, "Back Office Employee", "Сотрудник бэк-офиса")
+Person(FrontOfficeEmployee, "Front Office Employee", "Сотрудник фронт-офиса")
+Person(CallCentreEmployee, "Call Centre Employee", "Сотрудник кол-центра")
+
+
+System_Boundary(MarketingWebsiteSystem, "Сайт") {
+    Container(CatalogUI, "Catalog UI", "React.js", "Веб-интерфейс с предложениями банка")
+    Container(DepositApplicationsUI, "Deposit Applications UI", "React.js", "Веб-интерфейс для подачи заявки")
+}
+
+System_Boundary(CatalogSystem, "Каталог") {
+    Container(CatalogService, "Catalog Service", "Python", "Каталог ставок и предложений банка")
+
+    ContainerDb(CatalogCache, "Catalog Cache", "KeyDB", "Кэш ставок")
+    ContainerDb(CatalogDB, "Catalog Database", "MS SQL", "Централизованное хранилище ставок")
+}
+
+System_Boundary(OnlineBankingSystem, "Интернет-банк") {
+    Container(OnlineBankingUI, "Online Banking UI", "React.js", "Веб-интерфейс интернет-банка")
+    Container(OnlineBankingService, "Online Banking Service", "ASP.NET Core 8", "Сервис интернет-банка")
+    Container(OnlineBankingReverseProxy, "Online Banking Reverse Proxy", "Kong", "Обратный прокси для взаимодействия с монолитом интернет-банка")
+    Container(MonolithOnlineBanking, "Online Banking Monolith", "ASP.NET MVC 4.5", "Legacy: Монолитное ядро интернет-банка")
+
+    ContainerDb(MonolithOnlineBankingDB, "Online Banking Monolith Database", "MS SQL", "База данных ядра монолитного онлайн-банка")
+    ContainerDb(OnlineBankingDB, "Online Banking Service Database", "MS SQL", "База данных онлайн-банка")
+}
+
+System_Boundary(DepositsSystem, "Депозиты") {
+    Container(DepositsService, "Deposits Service", "ASP.NET Core 8", "Сервис депозитов")
+
+    ContainerDb(DepositsDB, "Deposits Database", "PostgreSQL + Patroni + HA", "База данных депозитов")
+}
+
+System_Boundary(IntegrationSystem, "Шлюз интеграций") {
+    ContainerQueue(MessageQueue, "Message Queue", "Kafka", "Асинхронная очередь сообщений для интеграции между сервисами")
+    Container(MessageConsumer, "Message Consumer", "Python", "Шина сообщений для чтения сообщений")
+    Container(IntegrationReverseProxy, "Integrations Reverse Proxy", "Kong", "Обратный прокси для интеграции между сервисами")
+}
+
+System_Boundary(ABSSystem, "АБС") {
+    Container(ABSApp, "ABS Application", "Delphi", "Десктоп-клиент АБС")
+    Container(ABSAdapter, "ABS Adapter", "ASP.NET Core 8", "Сервис-адаптер для взаимодействия с АБС")
+    Container(ABSProcedures, "ABS Core Procedures", "PL/SQL", "Основная логика работы системы через процедуры в СУБД. ")
+
+    ContainerDb(ABSDB, "ABS Database", "Oracle", "База данных АБС")
+}
+
+System_Boundary(CallCentreSystem, "Платформа кол-центра") {
+    Container(CallCentreUI, "Call Centre CRM UI", "React.js", "Веб-интерфейс платформы кол-центра")
+    Container(CallServiceLayer, "Call Centre Service Layer", "Java Spring Boot", "Backend платформы кол-центра")
+
+    ContainerDb(CallCentreDB, "CallCentre Database", "PostgreSQL", "База данных платформы кол-центра")
+
+}
+
+Container(SMSGateway, "SMS Gateway", "", "Шлюз для отправки смс сообщений")
+Container_Ext(SMSTelecom, "SMS Telecom-operator", "", "Доставка сообщений клиенту")
+
+
+
+' Actors relations
+Rel(Client, CatalogUI, "Использует", "REST, JSON")
+Rel(Client, DepositApplicationsUI, "Использует", "REST, JSON")
+Rel(Client, OnlineBankingUI, "Использует", "REST, JSON")
+Rel(BackOfficeEmployee, ABSApp, "Использует", "Rich client")
+Rel(FrontOfficeEmployee, ABSApp, "Использует", "Rich client")
+Rel_L(CallCentreEmployee, CallCentreUI, "Использует", "REST, JSON")
+
+' Catalog relations
+Rel(CatalogUI, CatalogService, "Чтение данных каталога", "REST, JSON, JWT")
+Rel_R(CatalogService, CatalogDB, "Операции на чтение/запись")
+Rel_R(CatalogService, CatalogCache, "Кэширование/\nинвалидация")
+
+' Deposits relations
+Rel(DepositApplicationsUI, DepositsService, "CRUD депозитов", "REST, JSON, JWT")
+Rel_R(DepositsService, DepositsDB, "Операции на чтение/запись")
+Rel(DepositsService, MessageQueue, "Публикация сообщений", "JSON")
+
+' Online banking relations
+Rel(OnlineBankingUI, OnlineBankingReverseProxy, "CRUD интернет-банка", "REST, JSON, JWT")
+Rel_L(OnlineBankingReverseProxy, MonolithOnlineBanking, "Обращение к legacy-ресурсам")
+Rel(OnlineBankingReverseProxy, OnlineBankingService, "Обращение к ресурсам MVP", "REST, JSON")
+Rel_R(OnlineBankingReverseProxy, CatalogService, "Чтение данных каталога", "REST, JSON")
+Rel(OnlineBankingService, OnlineBankingDB, "Операции на чтение/запись")
+Rel(OnlineBankingService, MessageQueue, "Публикация сообщений", "JSON")
+Rel(MonolithOnlineBanking, MonolithOnlineBankingDB, "Операции на чтение/запись")
+
+' Integration relations
+Rel(MessageQueue, MessageConsumer, "Чтение сообщений")
+Rel(MessageConsumer, IntegrationReverseProxy, "Отправка данных", "REST, JSON")
+Rel(IntegrationReverseProxy, ABSAdapter, "Синхронизация событий")
+Rel_U(IntegrationReverseProxy, SMSGateway, "Обработка запроса на отправку СМС-сообщение")
+
+'SMS relations
+Rel(SMSGateway, SMSTelecom, "Отправка СМС-Сообщения")
+Rel(SMSTelecom, Client, "Доставка СМС-Сообщения")
+
+' ABS relations
+Rel(ABSApp, ABSProcedures, "Вызов процедур")
+Rel_L(ABSAdapter, ABSProcedures, "Инкапсуляция вызовов процедур")
+Rel_L(ABSProcedures, ABSDB, "Операции на чтение/запись")
+Rel(ABSProcedures, SMSGateway, "Отправка СМС-Сообщения")
+
+' Call centre relations
+Rel(CallCentreUI, CallServiceLayer, "REST, JSON")
+Rel(CallServiceLayer, CallCentreDB, "Операции на чтение/запись")
+Rel_L(CallServiceLayer, MessageQueue, "Публикация сообщений", "JSON")
+
+
+SHOW_LEGEND()
+@enduml

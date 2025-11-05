@@ -1,0 +1,75 @@
+@startuml C4_Containers_Deposits
+title Схема MVP реализации работы со ставками
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+
+Person(CreditEmployee, "Credit Employee", "Сотрудник отдела кредитования")
+Person(CallCentreEmployee, "Call Centre Employee", "Сотрудник кол-центра")
+Person_Ext(ExternalCallCentreEmployee, "External Call Centre Employee", "Сотрудник партнерского кол-центра")
+
+System_Boundary(CatalogSystem, "Каталог") {
+    Container(CatalogServiceAdminUI, "Catalog Service Admin UI", "React.js", "Веб-интерфейс платформы администрирования каталога")
+    Container(CatalogService, "Catalog Service", "Python", "Каталог ставок и предложений банка")
+
+    ContainerDb(CatalogCache, "Catalog Cache", "KeyDB", "Кэш ставок")
+    ContainerDb(CatalogDB, "Catalog Database", "MS SQL", "Централизованное хранилище ставок")
+}
+
+System_Boundary(IntegrationSystem, "Шлюз интеграций") {
+    ContainerQueue(MessageQueue, "Message Queue", "Kafka", "Асинхронная очередь сообщений для интеграции между сервисами")
+    Container(MessageConsumer, "Message Consumer", "Python", "Шина сообщений для чтения сообщений")
+    Container(IntegrationReverseProxy, "Integrations Reverse Proxy", "Kong", "Обратный прокси для интеграции между сервисами")
+}
+
+System_Boundary(CallCentreSystem, "Платформа кол-центра") {
+    Container(CallCentreUI, "Call Centre CRM UI", "React.js", "Веб-интерфейс платформы кол-центра")
+    Container(CallServiceLayer, "Call Centre Service Layer", "Java Spring Boot", "Backend платформы кол-центра")
+
+    ContainerDb(CallCentreDB, "CallCentre Database", "PostgreSQL", "База данных платформы кол-центра")
+
+}
+
+System_Boundary(RatesCalculationsSystem, "Вычисление ставок") {
+    Container(RatesCalculationsWorker, "Rates Calculations Worker", "Python", "Вычисляет и рассчитывает актуальные ставки")
+
+    ContainerDb(RatesCalculationsCache, "Rates Calculations Cache", "KeyDB", "Хранение последних посчитанных ставок")
+}
+System_Boundary(ExternalSystem, "Партнерский кол-центр") {
+    System_Ext(ExternalFileServer, "External File Server", "Хранение файлов с актуальными ставками")
+    System_Ext(ExternalCallCentre, "External Call Centre Platform", "Внешняя CRM-система для обработки клиентских обращений")
+}
+
+' Actors relations
+Rel(CallCentreEmployee, CallCentreUI, "Использует", "REST, JSON")
+Rel(CreditEmployee, CatalogServiceAdminUI, "Использует", "REST, JSON")
+Rel_U(ExternalCallCentreEmployee, ExternalCallCentre, "Получение актуальных ставок", "REST, JSON")
+
+' Catalog relations
+Rel(CatalogServiceAdminUI, CatalogService, "REST, JSON")
+Rel(CatalogService, CatalogDB, "Операции на чтение/запись")
+Rel(CatalogService, CatalogCache, "Кэширование/\nинвалидация")
+Rel(CatalogService, MessageQueue, "Публикация ставок")
+
+' Integration relations
+Rel(MessageQueue, MessageConsumer, "Чтение сообщений")
+Rel(MessageConsumer, IntegrationReverseProxy, "Отправка данных о ставках", "REST, JSON")
+Rel(IntegrationReverseProxy, CallServiceLayer, "Отправка актуальных ставок", "REST, JSON")
+Rel(IntegrationReverseProxy, ExternalFileServer, "Отправка актуальных ставок файлом", "SFTP")
+Rel(IntegrationReverseProxy, CatalogService, "Отправка актуальных ставок", "REST, JSON")
+
+' Call centre relations
+Rel(CallCentreUI, CallServiceLayer, "REST, JSON")
+Rel(CallServiceLayer, CallCentreDB, "Операции на чтение/запись")
+
+' Rates relations
+Rel(RatesCalculationsWorker, RatesCalculationsCache, "Кэширование/\nинвалидация")
+Rel_L(RatesCalculationsWorker, MessageQueue, "Публикация ставок", "JSON")
+
+' External relations
+Rel(ExternalFileServer, ExternalCallCentre, "Отправка актуальных ставок", "REST, JSON")
+
+
+
+SHOW_LEGEND()
+@enduml
